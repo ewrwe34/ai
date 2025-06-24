@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const TranslatePoemInputSchema = z.object({
   poem: z.string().describe('The poem to be translated.'),
