@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { generatePoemFromPhoto } from '@/ai/flows/generate-poem-from-photo';
 import { customizePoemTone } from '@/ai/flows/customize-poem-tone';
 import { customizePoemStyle } from '@/ai/flows/customize-poem-style';
+import { translatePoem } from '@/ai/flows/translate-poem';
 
 const generatePoemSchema = z.object({
   photoDataUri: z.string().refine((val) => val.startsWith('data:image/'), {
@@ -59,6 +60,23 @@ export async function customizeStyleAction(values: z.infer<typeof customizeStyle
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during style customization.";
     return { success: false, error: errorMessage };
   }
+}
+
+const translatePoemSchema = z.object({
+    poem: z.string(),
+    language: z.string(),
+});
+
+export async function translatePoemAction(values: z.infer<typeof translatePoemSchema>) {
+    try {
+        const validatedValues = translatePoemSchema.parse(values);
+        const result = await translatePoem(validatedValues);
+        return { success: true, poem: result.translatedPoem };
+    } catch (error) {
+        console.error('Error translating poem:', error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during translation.";
+        return { success: false, error: errorMessage };
+    }
 }
 
 const imageUrlSchema = z.string().url();

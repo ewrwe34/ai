@@ -6,6 +6,7 @@ import Image from 'next/image';
 import {
   Copy,
   Download,
+  Languages,
   Link,
   Loader2,
   Palette,
@@ -36,9 +37,8 @@ import {
 } from '@/components/ui/select';
 import {
   generatePoemAction,
-  customizeToneAction,
-  customizeStyleAction,
   getImageFromUrlAction,
+  translatePoemAction,
 } from '@/app/actions';
 
 type CustomizationState = {
@@ -134,8 +134,8 @@ export function PoemGenerator() {
   };
 
   const handleCustomizationChange = <K extends keyof CustomizationState>(key: K, value: CustomizationState[K]) => {
-    if (!image || !poem) {
-      toast({ title: 'Please generate a poem first.' });
+    if (!image) {
+      toast({ title: 'Please upload an image first.' });
       return;
     }
     
@@ -144,21 +144,36 @@ export function PoemGenerator() {
 
     startTransition(async () => {
       setError(null);
-      let result;
-      if (key === 'tone') {
-        result = await customizeToneAction({ poem, tone: value as any });
-      } else if (key === 'style') {
-        result = await customizeStyleAction({ poem, style: value as any });
-      } else if (key === 'length') {
-        result = await generatePoemAction({ photoDataUri: image, ...newCustomization });
-      }
+      const result = await generatePoemAction({ photoDataUri: image, ...newCustomization });
 
       if (result?.success) {
         setPoem(result.poem);
-        toast({ title: `Poem ${key} updated successfully!` });
+        toast({ title: `Poem updated successfully!` });
       } else if (result) {
         setError(result.error);
-        toast({ variant: 'destructive', title: `Error updating ${key}`, description: result.error });
+        toast({ variant: 'destructive', title: `Error updating poem`, description: result.error });
+      }
+    });
+  };
+
+  const handleTranslate = () => {
+    if (!poem) {
+      toast({ title: 'Please generate a poem first.' });
+      return;
+    }
+    startTransition(async () => {
+      setError(null);
+      const result = await translatePoemAction({ poem, language: 'Arabic' });
+      if (result.success) {
+        setPoem(result.poem);
+        toast({ title: 'Poem translated to Arabic!' });
+      } else {
+        setError(result.error);
+        toast({
+          variant: 'destructive',
+          title: 'Error translating poem',
+          description: result.error,
+        });
       }
     });
   };
@@ -326,6 +341,7 @@ export function PoemGenerator() {
                 value={poem}
                 className="min-h-[200px] text-base font-body bg-background/50 whitespace-pre-wrap"
                 rows={10}
+                dir={/[\u0600-\u06FF]/.test(poem) ? 'rtl' : 'ltr'}
               />
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button variant="outline" onClick={handleDownload} disabled={isPending}>
@@ -336,6 +352,9 @@ export function PoemGenerator() {
                 </Button>
                 <Button variant="outline" onClick={handleShare} disabled={isPending}>
                   <Share2 className="mr-2" /> Share
+                </Button>
+                <Button variant="outline" onClick={handleTranslate} disabled={isPending}>
+                  <Languages className="mr-2" /> Translate to Arabic
                 </Button>
               </div>
             </>
