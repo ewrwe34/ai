@@ -46,7 +46,7 @@ const customizePoemTonePrompt = ai.definePrompt({
 Original Poem:
 {{poem}}`,
     config: {
-        model: 'gemini-1.5-flash',
+        model: 'googleai/gemini-1.5-flash',
     }
 });
 

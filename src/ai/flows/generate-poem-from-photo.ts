@@ -48,7 +48,7 @@ If tone, style, and length is not specified, create a poem in your own style.
 
 {{media url=photoDataUri}}`,
     config: {
-        model: 'gemini-1.5-flash',
+        model: 'googleai/gemini-1.5-flash',
     }
 });
 

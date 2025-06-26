@@ -39,7 +39,7 @@ Desired Style: {{style}}
 
 Rewrite the poem in the style requested. The customized poem should still capture the essence of the original poem.`,
     config: {
-        model: 'gemini-1.5-flash',
+        model: 'googleai/gemini-1.5-flash',
     }
 });
 
