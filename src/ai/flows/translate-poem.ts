@@ -10,6 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import OpenAI from 'openai';
+import {GenerateTypedAIResponse} from '@/ai/utils';
+
 
 const TranslatePoemInputSchema = z.object({
   poem: z.string().describe('The poem to be translated.'),
@@ -26,18 +29,6 @@ export async function translatePoem(input: TranslatePoemInput): Promise<Translat
   return translatePoemFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'translatePoemPrompt',
-  input: {schema: TranslatePoemInputSchema},
-  output: {schema: TranslatePoemOutputSchema},
-  prompt: `You are a literary translator. Translate the following poem into {{{language}}}. Preserve the meaning and artistic style of the original.
-
-Poem:
-{{{poem}}}
-
-Translated Poem:`,
-});
-
 const translatePoemFlow = ai.defineFlow(
   {
     name: 'translatePoemFlow',
@@ -45,7 +36,11 @@ const translatePoemFlow = ai.defineFlow(
     outputSchema: TranslatePoemOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const prompt = `You are a literary translator. Translate the following poem into ${input.language}. Preserve the meaning and artistic style of the original.
+
+Poem:
+${input.poem}`;
+
+    return await GenerateTypedAIResponse(prompt, TranslatePoemOutputSchema);
   }
 );

@@ -10,6 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import OpenAI from 'openai';
+import {GenerateTypedAIResponse} from '@/ai/utils';
+
 
 const CustomizePoemToneInputSchema = z.object({
   poem: z.string().describe('The original generated poem.'),
@@ -35,20 +38,6 @@ export async function customizePoemTone(input: CustomizePoemToneInput): Promise<
   return customizePoemToneFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'customizePoemTonePrompt',
-  input: {schema: CustomizePoemToneInputSchema},
-  output: {schema: CustomizePoemToneOutputSchema},
-  prompt: `You are a master poet, skilled at adjusting the tone of existing poems.
-
-  Revise the following poem to be more {{{tone}}}.  Maintain the original poem's theme and imagery, but adjust the word choice and phrasing to match the specified tone.
-
-Original Poem:
-{{{poem}}}
-
-Revised Poem:`,
-});
-
 const customizePoemToneFlow = ai.defineFlow(
   {
     name: 'customizePoemToneFlow',
@@ -56,7 +45,13 @@ const customizePoemToneFlow = ai.defineFlow(
     outputSchema: CustomizePoemToneOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const prompt = `You are a master poet, skilled at adjusting the tone of existing poems.
+
+  Revise the following poem to be more ${input.tone}. Maintain the original poem's theme and imagery, but adjust the word choice and phrasing to match the specified tone.
+
+Original Poem:
+${input.poem}`;
+
+    return await GenerateTypedAIResponse(prompt, CustomizePoemToneOutputSchema);
   }
 );
