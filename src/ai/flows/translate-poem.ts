@@ -35,9 +35,6 @@ const translatePoemPrompt = ai.definePrompt({
 
 Poem:
 {{poem}}`,
-    config: {
-        model: googleAI.model('gemini-1.5-flash'),
-    }
 });
 
 const translatePoemFlow = ai.defineFlow(
@@ -47,7 +44,9 @@ const translatePoemFlow = ai.defineFlow(
     outputSchema: TranslatePoemOutputSchema,
   },
   async input => {
-    const { output } = await translatePoemPrompt(input);
+    const { output } = await translatePoemPrompt(input, {
+        model: googleAI.model('gemini-1.5-flash'),
+    });
     return output!;
   }
 );

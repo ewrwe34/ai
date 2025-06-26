@@ -39,9 +39,6 @@ Original Poem: {{poem}}
 Desired Style: {{style}}
 
 Rewrite the poem in the style requested. The customized poem should still capture the essence of the original poem.`,
-    config: {
-        model: googleAI.model('gemini-1.5-flash'),
-    }
 });
 
 const customizePoemStyleFlow = ai.defineFlow(
@@ -51,7 +48,9 @@ const customizePoemStyleFlow = ai.defineFlow(
     outputSchema: CustomizePoemStyleOutputSchema,
   },
   async input => {
-    const { output } = await customizePoemStylePrompt(input);
+    const { output } = await customizePoemStylePrompt(input, {
+        model: googleAI.model('gemini-1.5-flash'),
+    });
     return output!;
   }
 );

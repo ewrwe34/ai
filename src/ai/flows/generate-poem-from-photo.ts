@@ -48,9 +48,6 @@ The poem should be in the requested tone, style and length.
 If tone, style, and length is not specified, create a poem in your own style.
 
 {{media url=photoDataUri}}`,
-    config: {
-        model: googleAI.model('gemini-1.5-flash'),
-    }
 });
 
 
@@ -61,7 +58,9 @@ const generatePoemFromPhotoFlow = ai.defineFlow(
     outputSchema: GeneratePoemFromPhotoOutputSchema,
   },
   async (input) => {
-    const { output } = await generatePoemFromPhotoPrompt(input);
+    const { output } = await generatePoemFromPhotoPrompt(input, {
+        model: googleAI.model('gemini-1.5-flash'),
+    });
     return output!;
   }
 );

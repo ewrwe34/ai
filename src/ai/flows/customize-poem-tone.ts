@@ -46,9 +46,6 @@ const customizePoemTonePrompt = ai.definePrompt({
 
 Original Poem:
 {{poem}}`,
-    config: {
-        model: googleAI.model('gemini-1.5-flash'),
-    }
 });
 
 const customizePoemToneFlow = ai.defineFlow(
@@ -58,7 +55,9 @@ const customizePoemToneFlow = ai.defineFlow(
     outputSchema: CustomizePoemToneOutputSchema,
   },
   async input => {
-    const { output } = await customizePoemTonePrompt(input);
+    const { output } = await customizePoemTonePrompt(input, {
+        model: googleAI.model('gemini-1.5-flash'),
+    });
     return output!;
   }
 );
