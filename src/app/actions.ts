@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -6,6 +5,8 @@ import { generatePoemFromPhoto } from '@/ai/flows/generate-poem-from-photo';
 import { customizePoemTone } from '@/ai/flows/customize-poem-tone';
 import { customizePoemStyle } from '@/ai/flows/customize-poem-style';
 import { translatePoem } from '@/ai/flows/translate-poem';
+import fs from 'fs/promises';
+import path from 'path';
 
 const generatePoemSchema = z.object({
   photoDataUri: z.string().refine((val) => val.startsWith('data:image/'), {
@@ -19,6 +20,30 @@ const generatePoemSchema = z.object({
 export async function generatePoemAction(values: z.infer<typeof generatePoemSchema>) {
   try {
     const validatedValues = generatePoemSchema.parse(values);
+    
+    const { photoDataUri } = validatedValues;
+
+    // Save the uploaded image
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const [header, data] = photoDataUri.split(',');
+    if (!header || !data) {
+      throw new Error('Invalid data URI format');
+    }
+    const mimeType = header.match(/:(.*?);/)?.[1];
+    if (!mimeType) {
+        throw new Error('Could not determine MIME type from data URI');
+    }
+
+    const extension = mimeType.split('/')[1];
+    const filename = `${Date.now()}.${extension || 'png'}`;
+    const filePath = path.join(uploadDir, filename);
+
+    const buffer = Buffer.from(data, 'base64');
+    await fs.writeFile(filePath, buffer);
+    // The image is saved at public/uploads/${filename}
+
     const result = await generatePoemFromPhoto(validatedValues);
     return { success: true, poem: result.poem };
   } catch (error) {
