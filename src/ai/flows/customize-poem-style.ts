@@ -10,8 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import OpenAI from 'openai';
-import {GenerateTypedAIResponse} from '@/ai/utils';
 
 const CustomizePoemStyleInputSchema = z.object({
   poem: z.string().describe('The original generated poem.'),
@@ -28,6 +26,23 @@ export async function customizePoemStyle(input: CustomizePoemStyleInput): Promis
   return customizePoemStyleFlow(input);
 }
 
+const customizePoemStylePrompt = ai.definePrompt({
+    name: 'customizePoemStylePrompt',
+    input: { schema: CustomizePoemStyleInputSchema },
+    output: { schema: CustomizePoemStyleOutputSchema },
+    prompt: `You are a master poet, skilled in various poetic forms.
+
+You will take an existing poem and rewrite it in a new style, based on user request.
+
+Original Poem: {{poem}}
+Desired Style: {{style}}
+
+Rewrite the poem in the style requested. The customized poem should still capture the essence of the original poem.`,
+    config: {
+        model: 'gemini-1.5-flash',
+    }
+});
+
 const customizePoemStyleFlow = ai.defineFlow(
   {
     name: 'customizePoemStyleFlow',
@@ -35,15 +50,7 @@ const customizePoemStyleFlow = ai.defineFlow(
     outputSchema: CustomizePoemStyleOutputSchema,
   },
   async input => {
-    const prompt = `You are a master poet, skilled in various poetic forms.
-
-You will take an existing poem and rewrite it in a new style, based on user request.
-
-Original Poem: ${input.poem}
-Desired Style: ${input.style}
-
-Rewrite the poem in the style requested. The customized poem should still capture the essence of the original poem.`;
-
-    return await GenerateTypedAIResponse(prompt, CustomizePoemStyleOutputSchema);
+    const { output } = await customizePoemStylePrompt(input);
+    return output!;
   }
 );

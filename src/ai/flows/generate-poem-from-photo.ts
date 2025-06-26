@@ -9,9 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import OpenAI from 'openai';
-import type {ChatCompletionMessageParam} from 'openai/resources/chat';
-import {GenerateTypedAIResponse} from '@/ai/utils';
 
 const GeneratePoemFromPhotoInputSchema = z.object({
   photoDataUri: z
@@ -34,6 +31,28 @@ export async function generatePoemFromPhoto(input: GeneratePoemFromPhotoInput): 
   return generatePoemFromPhotoFlow(input);
 }
 
+const generatePoemFromPhotoPrompt = ai.definePrompt({
+    name: 'generatePoemFromPhotoPrompt',
+    input: { schema: GeneratePoemFromPhotoInputSchema },
+    output: { schema: GeneratePoemFromPhotoOutputSchema },
+    prompt: `You are a poet laureate, skilled at creating poems inspired by images. Based on the image provided, write a poem that captures its essence and mood.
+
+Tone: {{#if tone}}{{tone}}{{else}}not specified{{/if}}
+Style: {{#if style}}{{style}}{{else}}not specified{{/if}}
+Length: {{#if length}}{{length}}{{else}}not specified{{/if}}
+
+Write a poem inspired by the image. Focus on imagery, emotion, and storytelling.
+The poem should reflect the content and mood of the photo.
+The poem should be in the requested tone, style and length.
+If tone, style, and length is not specified, create a poem in your own style.
+
+{{media url=photoDataUri}}`,
+    config: {
+        model: 'gemini-1.5-flash',
+    }
+});
+
+
 const generatePoemFromPhotoFlow = ai.defineFlow(
   {
     name: 'generatePoemFromPhotoFlow',
@@ -41,35 +60,7 @@ const generatePoemFromPhotoFlow = ai.defineFlow(
     outputSchema: GeneratePoemFromPhotoOutputSchema,
   },
   async (input) => {
-    const prompt = `You are a poet laureate, skilled at creating poems inspired by images. Based on the image provided, write a poem that captures its essence and mood.
-
-Tone: ${input.tone ?? 'not specified'}
-Style: ${input.style ?? 'not specified'}
-Length: ${input.length ?? 'not specified'}
-
-Write a poem inspired by the image. Focus on imagery, emotion, and storytelling.
-The poem should reflect the content and mood of the photo.
-The poem should be in the requested tone, style and length.
-If tone, style, and length is not specified, create a poem in your own style.`;
-
-    const messages: ChatCompletionMessageParam[] = [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: prompt,
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: input.photoDataUri,
-            },
-          },
-        ],
-      },
-    ];
-
-    return await GenerateTypedAIResponse(messages, GeneratePoemFromPhotoOutputSchema);
+    const { output } = await generatePoemFromPhotoPrompt(input);
+    return output!;
   }
 );

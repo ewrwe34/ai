@@ -1,8 +1,13 @@
 import {genkit} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {config} from 'dotenv';
 
 config(); // Load environment variables from .env file
 
 export const ai = genkit({
-  // Plugins are not configured here as we will use the OpenAI client directly.
+  plugins: [
+    googleAI({
+      apiKey: process.env.GEMINI_API_KEY,
+    }),
+  ],
 });
