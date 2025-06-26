@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'zod';
 
 const CustomizePoemStyleInputSchema = z.object({
@@ -39,7 +40,7 @@ Desired Style: {{style}}
 
 Rewrite the poem in the style requested. The customized poem should still capture the essence of the original poem.`,
     config: {
-        model: 'googleai/gemini-1.5-flash',
+        model: googleAI.model('gemini-1.5-flash'),
     }
 });
 

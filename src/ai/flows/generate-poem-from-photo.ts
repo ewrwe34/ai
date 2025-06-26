@@ -8,6 +8,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'zod';
 
 const GeneratePoemFromPhotoInputSchema = z.object({
@@ -48,7 +49,7 @@ If tone, style, and length is not specified, create a poem in your own style.
 
 {{media url=photoDataUri}}`,
     config: {
-        model: 'googleai/gemini-1.5-flash',
+        model: googleAI.model('gemini-1.5-flash'),
     }
 });
 
